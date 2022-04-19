@@ -154,30 +154,3 @@ if __name__ == '__main__':
             print(f"Тест #{k}")
             process_test(data[k - 1])
             print("*" * 30, '\n')
-
-
-def explicit_scheme(config):
-    # (u_n_next - u_n) / tau = k/h^2 (u_n-1 - 2u_n + u_n+1) + f(x_n,t)
-    U = np.zeros((config.N + 1, config.M + 1), dtype=float)
-
-    for i in range(0, config.N + 1):
-        U[i, 0] = config.mu.subs(x, config.x_grid[i])
-    for j in range(0, config.M + 1):
-        U[0, j] = config.mu_1.subs(t, config.time_grid[j])
-        U[config.N, j] = config.mu_2.subs(t, config.time_grid[j])
-    #
-    # for i in range(1, config.M + 1):
-    #     for j in range(1, config.N):
-    #         rhs = (config.kappa/(config.h**2) * (U[j - 1, i - 1] - 2 * U[j, i - 1] + 2 * U[j + 1, i - 1])
-    #                + config.f.subs([(x, config.x_grid[j]), (t, config.time_grid[i - 1])]))
-    #         U[j, i] = rhs * config.tau + U[j, i - 1]
-    for k in range(1, config.M + 1):
-        for i in range(0, config.N + 1):
-            U[i, 0] = config.mu.subs(x, config.x_grid[i])
-        for i in range(1, config.N):
-            U[i, k] = config.tau * config.kappa * (U[i + 1, k - 1] - 2 * U[i, k - 1] + U[i - 1, k - 1]) / (config.h ** 2) + \
-                        config.tau * config.f.subs([(x, config.x_grid[i]), (t, config.time_grid[k - 1])]) + U[i, k - 1]
-        # u_p[0, k] = mu1.subs(t, t_p[k])
-        # u_p[N, k] = mu2.subs(t, t_p[k])
-    (X_grid, Y_grid) = np.meshgrid(config.x_grid, config.time_grid, indexing="ij")
-    return X_grid, Y_grid, U
